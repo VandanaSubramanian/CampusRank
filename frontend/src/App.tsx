@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+
 type Item = {
   id: number;
   name: string;
@@ -12,12 +13,13 @@ type Event = {
   voting_method: string;
   items: Item[];
 };
+type Screen = "home" | "vote" | "review" | "success";
 
 function App() {
+  const [screen, setScreen] = useState<Screen>("vote");
   const [event, setEvent] = useState<Event | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const [error, setError] = useState("");
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const [email, setEmail] = useState("");
   const [submissionMessage, setSubmissionMessage] = useState("");
   const [submissionError, setSubmissionError] = useState("");
@@ -94,6 +96,7 @@ function App() {
     }
 
     setSubmissionMessage(data.message);
+    setScreen("success");
   } catch (submitError) {
     if (submitError instanceof Error) {
       setSubmissionError(submitError.message);
@@ -115,7 +118,7 @@ function App() {
 
   const allItemsRanked =
     selectedItemIds.length === event.items.length;
-    if (submissionMessage) {
+    if (screen === "success") {
   return (
     <main
       style={{
@@ -130,7 +133,7 @@ function App() {
     </main>
   );
 }
-    if (showConfirmation) {
+    if (screen === "review") {
   return (
     <main
       style={{
@@ -182,7 +185,7 @@ function App() {
 
       <button
         type="button"
-        onClick={() => setShowConfirmation(false)}
+        onClick={() => setScreen("vote")}
       >
         Go Back
       </button>
@@ -263,7 +266,7 @@ function App() {
       <button
   type="button"
   disabled={!allItemsRanked}
-  onClick={() => setShowConfirmation(true)}
+  onClick={() => setScreen("review")}
   style={{
     marginTop: "24px",
     padding: "12px 24px",

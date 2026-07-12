@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import VotePage from "./components/VotePage";
 import ReviewPage from "./components/ReviewPage";
+import HomePage from "./components/HomePage";
 
 
 type Item = {
@@ -15,10 +16,10 @@ type Event = {
   voting_method: string;
   items: Item[];
 };
-type Screen = "home" | "vote" | "review" | "success";
+type Screen = "home" | "create" | "vote" | "review" | "success";
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("vote");
+  const [screen, setScreen] = useState<Screen>("home");
   const [event, setEvent] = useState<Event | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const [error, setError] = useState("");
@@ -27,23 +28,7 @@ function App() {
   const [submissionError, setSubmissionError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/events/1")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Backend returned ${response.status}`);
-        }
-
-        return response.json();
-      })
-      .then((data: Event) => {
-        setEvent(data);
-      })
-      .catch((fetchError: Error) => {
-        console.error(fetchError);
-        setError(fetchError.message);
-      });
-  }, []);
+  
 
   function handleItemClick(itemId: number) {
     setSelectedItemIds((currentSelection) => {
@@ -100,6 +85,34 @@ function App() {
   } finally {
     setIsSubmitting(false);
   }
+}
+if (screen === "home") {
+  return (
+    <HomePage
+      onCreateEvent={() => setScreen("create")}
+    />
+  );
+}if (screen === "create") {
+  return (
+    <main
+      style={{
+        maxWidth: "600px",
+        margin: "0 auto",
+        padding: "40px 20px",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setScreen("home")}
+      >
+        ← Back
+      </button>
+
+      <h1>Create an Event</h1>
+
+      <p>The organizer form will go here.</p>
+    </main>
+  );
 }
 
   if (error) {

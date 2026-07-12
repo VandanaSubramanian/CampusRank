@@ -10,6 +10,9 @@ def create_event(db: Session, event_data: schemas.EventCreate):
         voting_method=event_data.voting_method
     )
 
+    db.add(event)
+    db.flush()
+
     for item_name in event_data.items:
         item = models.Item(
             event_id=event.id,

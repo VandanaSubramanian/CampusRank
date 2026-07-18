@@ -3,6 +3,7 @@ import VotePage from "./components/VotePage";
 import ReviewPage from "./components/ReviewPage";
 import HomePage from "./components/HomePage";
 import CreateEventPage from "./components/CreateEventPage";
+import EventCreatedPage from "./components/EventCreatedPage";
 
 type Item = {
   id: number;
@@ -16,7 +17,7 @@ type Event = {
   voting_method: string;
   items: Item[];
 };
-type Screen = "home" | "create" | "vote" | "review" | "success";
+type Screen = "home" | "create" | "created"| "join"| "vote" | "review" | "success";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("home");
@@ -32,6 +33,8 @@ function App() {
   const [itemNames, setItemNames] = useState(["", ""]);
   const [createError, setCreateError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [joinEventId, setJoinEventId] = useState("");
+  const [joinError, setJoinError] = useState("");
 
   function updateItemName(index: number, value: string) {
   setItemNames((currentItems) =>
@@ -40,7 +43,7 @@ function App() {
     )
   );
 }
-async function loadEvent(eventId: number) {
+async function loadEventData(eventId: number) {
   const response = await fetch(
     `http://127.0.0.1:8000/events/${eventId}`
   );
@@ -53,7 +56,7 @@ async function loadEvent(eventId: number) {
 
   setEvent(data);
   setSelectedItemIds([]);
-  setScreen("vote");
+  
 }
 async function handleCreateEvent() {
   setCreateError("");
@@ -107,7 +110,8 @@ async function handleCreateEvent() {
       throw new Error(data.detail ?? "Unable to create event");
     }
 
-    await loadEvent(data.id);
+    await loadEventData(data.id);
+    setScreen("created");
   } catch (createEventError) {
     if (createEventError instanceof Error) {
       setCreateError(createEventError.message);
@@ -145,6 +149,7 @@ function removeItemField(index: number) {
 
 
   async function handleSubmitVote() {
+  
   if (!event) {
     return;
   }
@@ -189,6 +194,7 @@ if (screen === "home") {
   return (
     <HomePage
       onCreateEvent={() => setScreen("create")}
+      onVoteInEvent={()=> setScreen("join")}
     />
   );
 }if (screen === "create") {
@@ -207,6 +213,82 @@ if (screen === "home") {
       createError={createError}
       isCreating={isCreating}
     />
+  );
+}
+if (screen === "created" && event) {
+  return (
+    <EventCreatedPage
+      event={event}
+      onStartVoting={() => setScreen("vote")}
+      onBackHome={() => setScreen("home")}
+    />
+  );
+}
+  if (screen === "join") {
+  return (
+    <main
+      style={{
+        maxWidth: "600px",
+        margin: "0 auto",
+        padding: "40px 20px",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => {
+          setJoinError("");
+          setScreen("home");
+        }}
+      >
+        ← Back
+      </button>
+
+      <h1>Vote in an Event</h1>
+
+      <p>Enter the event ID provided by the organizer.</p>
+
+      <input
+        type="number"
+        min="1"
+        value={joinEventId}
+        onChange={(inputEvent) =>
+          setJoinEventId(inputEvent.target.value)
+        }
+        placeholder="Event ID"
+      />
+
+      {joinError && (
+        <p style={{ color: "tomato" }}>{joinError}</p>
+      )}
+
+      <button
+        type="button"
+        onClick={async () => {
+          const eventId = Number(joinEventId);
+
+          if (!Number.isInteger(eventId) || eventId < 1) {
+            setJoinError("Please enter a valid event ID.");
+            return;
+          }
+
+          setJoinError("");
+
+          try {
+            await loadEventData(eventId);
+            setScreen("vote");
+
+          } catch (loadError) {
+            if (loadError instanceof Error) {
+              setJoinError(loadError.message);
+            } else {
+              setJoinError("Unable to load event.");
+            }
+          }
+        }}
+      >
+        Open Event
+      </button>
+    </main>
   );
 }
 

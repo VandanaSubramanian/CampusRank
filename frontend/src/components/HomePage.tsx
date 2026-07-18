@@ -1,8 +1,10 @@
 type HomePageProps = {
-  onCreateEvent: () => void;
+   onCreateEvent: () => void;
+   onVoteInEvent: () => void;
 };
 
-function HomePage({ onCreateEvent }: HomePageProps) {
+function HomePage({ onCreateEvent,
+  onVoteInEvent, }: HomePageProps) {
   return (
     <main
       style={{
@@ -22,6 +24,12 @@ function HomePage({ onCreateEvent }: HomePageProps) {
         onClick={onCreateEvent}
       >
         Create Event
+      </button>
+      <button
+      type = "button"
+      onClick = {onVoteInEvent}
+      style = {{marginLeft: "12px"}}>
+        Vote in an Event
       </button>
     </main>
   );
